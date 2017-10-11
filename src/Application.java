@@ -1,0 +1,37 @@
+import java.io.File;
+
+public class Application {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		Utility utility = new Utility();
+		utility.setInputFilePath(args[0]);
+		//utility.setLearningRate(Float.parseFloat(args[1]));
+		utility.setNoOfIterations(Integer.parseInt(args[2]));
+		utility.setHiddenLayerCount(Integer.parseInt(args[3]));
+		int argIndex = 3;
+		for(int i=0;i<Integer.parseInt(args[3]);i++)
+		{
+			argIndex = argIndex + 1;
+			utility.setHiddenLayerNodeCount(Integer.parseInt(args[argIndex]), i);
+		}
+		File inputFile = new File(utility.getInputFilePath());
+		PostProcess postProcess = new PostProcess(inputFile);
+		
+		utility.setTrainingSetLimit((int)((postProcess.getInputData().size()-1) * Integer.parseInt(args[1]) / 100));
+		NeuralNet neuralNetwork = new NeuralNet(postProcess, utility);
+		neuralNetwork.initializeNetwork();
+	
+		int noOfIter = 0;
+		Double error = Double.MAX_VALUE;
+		while(noOfIter < utility.getNoOfIterations() || error > 0.0)
+		{
+			error = neuralNetwork.trainNeuralNet();
+			noOfIter = noOfIter + 1;
+		}
+		
+		neuralNetwork.printModel();
+		error = neuralNetwork.testNeuralNet();
+	}
+
+}
