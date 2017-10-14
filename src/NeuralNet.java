@@ -5,6 +5,7 @@ public class NeuralNet {
 	List<Layer> layers;
 	PostProcess postProcess;
 	Utility utility;
+
 	public NeuralNet(PostProcess postProcess, Utility utility) {
 		layers = new ArrayList<>();
 		this.postProcess = postProcess;
@@ -37,7 +38,7 @@ public class NeuralNet {
 		{
 			forwardPass(i+1);
 			errorCount = errorCount + calculateError(i);
-			backwardPass();
+			backwardPass(i+1);
 		}
 		return errorCount;
 	}
@@ -48,7 +49,7 @@ public class NeuralNet {
 
 		for(int i=utility.getTrainingSetLimit();i<postProcess.getInputData().size();i++)
 		{
-			forwardPass(i+1);
+			forwardPass(i);
 			errorCount = errorCount + calculateError(i);
 		}
 		return errorCount;
@@ -100,10 +101,11 @@ public class NeuralNet {
 		}
 	}
 	
-	public void backwardPass()
+	public void backwardPass(int index)
 	{
+		Double targetValue = Double.parseDouble(postProcess.getInputData().get(index).getDataLine().get(Data.noOfAttributes));
 		Layer outputLayer = layers.get(layers.size()-1);
-		outputLayer.getNodes().get(0).setTargetValue(1.0);
+		outputLayer.getNodes().get(0).setTargetValue(targetValue);
 		outputLayer.getNodes().get(0).calculateOutputGradientValue();
 		
 		for(int i=layers.size()-2;i>0;i--)
@@ -128,9 +130,9 @@ public class NeuralNet {
 				List<Edge> adjacentList = node.getAdjList();
 				for(int j=0;j<adjacentList.size();j++)
 				{
-					Double newWeight = adjacentList.get(i).getWeight() + (utility.getLearningRate() * node.getOutput() * adjacentList.get(i).getDestination().getGradient());
-					adjacentList.get(i).setWeight(newWeight);
-					adjacentList.get(i).getDestination().getReverseAdjList().get(i).setWeight(newWeight);
+					Double newWeight = adjacentList.get(j).getWeight() + (utility.getLearningRate() * node.getOutput() * adjacentList.get(j).getDestination().getGradient());
+					adjacentList.get(j).setWeight(newWeight);
+					adjacentList.get(j).getDestination().getReverseAdjList().get(j).setWeight(newWeight);
 				}
 			}
 		}
@@ -143,7 +145,7 @@ public class NeuralNet {
 		int noOfAttributes = Data.noOfAttributes;
 		for(int i=0;i<noOfAttributes;i++)
 		{
-			inputLayer.getNodes().get(i).setOutput(postProcess.getInputData().get(rowNo).getDataLine().get(i));
+			inputLayer.getNodes().get(i).setOutput(Double.parseDouble(postProcess.getInputData().get(rowNo).getDataLine().get(i)));
 		}
 	}
 	
@@ -152,8 +154,9 @@ public class NeuralNet {
 		Layer outputLayer = layers.get(layers.size()-1);
 		Double expectedValue = outputLayer.getNodes().get(0).getOutput();
 		int noOfAttributes = Data.noOfAttributes;
-		Double targetValue = postProcess.getInputData().get(rowNo).getDataLine().get(noOfAttributes-1);
+		Double targetValue = Double.parseDouble(postProcess.getInputData().get(rowNo).getDataLine().get(noOfAttributes));
 		Double error = targetValue  - expectedValue;
+		//System.out.println("Error is: " + error + "TargetValue is: " + targetValue + "Expected Value is: "+expectedValue);
 		return error * error;
 	}
 }

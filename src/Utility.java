@@ -2,7 +2,7 @@
 public class Utility {
 	int hiddenLayerCount;
 	int[] hiddenLayerNodeCount;
-	float learningRate;
+	float learningRate = (float)0.1;
 	int trainingSetLimit;
 	int noOfIterations;
 	String inputFilePath;
